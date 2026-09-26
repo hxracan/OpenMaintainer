@@ -24,7 +24,7 @@ jobs:
           --health-cmd "pg_isready -U test"
           --health-interval 5s --health-timeout 3s --health-retries 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           version: 11.15.1
