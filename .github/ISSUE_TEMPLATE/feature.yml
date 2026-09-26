@@ -1,0 +1,19 @@
+name: Feature request
+description: Propose a maintainer workflow improvement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What maintainer problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and alternatives
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Permissions and safety considerations

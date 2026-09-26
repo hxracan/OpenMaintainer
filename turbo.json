@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "TEST_DATABASE_URL",
+    "OPENMAINTAINER_PLUGINS",
+    "GITHUB_*",
+    "OPENAI_*",
+    "TOKEN_ENCRYPTION_KEY",
+    "API_URL",
+    "DASHBOARD_URL",
+    "PORT",
+    "HOST",
+    "NODE_ENV",
+    "ALLOW_AUTOMATION_WRITES"
+  ],
+  "globalDependencies": ["tsconfig.json", "tsup.config.ts", "scripts/**", "docs/**"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    }
+  }
+}

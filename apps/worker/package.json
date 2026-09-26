@@ -1,0 +1,26 @@
+{
+  "name": "@openmaintainer/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup --config ../../tsup.config.ts src/main.ts",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@openmaintainer/ai": "workspace:*",
+    "@openmaintainer/plugin-sdk": "workspace:*",
+    "@openmaintainer/shared": "workspace:*",
+    "@openmaintainer/core": "workspace:*",
+    "@openmaintainer/config": "workspace:*",
+    "@openmaintainer/database": "workspace:*",
+    "@openmaintainer/github": "workspace:*",
+    "@openmaintainer/github-app": "workspace:*",
+    "@openmaintainer/repository-analysis": "workspace:*",
+    "@openmaintainer/pr-analysis": "workspace:*",
+    "@openmaintainer/issue-triage": "workspace:*",
+    "@openmaintainer/ci-analysis": "workspace:*",
+    "@openmaintainer/release-engine": "workspace:*",
+    "@openmaintainer/automation-engine": "workspace:*"
+  }
+}

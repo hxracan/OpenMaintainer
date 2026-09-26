@@ -1,0 +1,10 @@
+[
+  {
+    "sha": "example-fix",
+    "message": "fix: preserve UTF-8 issue titles"
+  },
+  {
+    "sha": "example-feature",
+    "message": "feat: add repository policy validation"
+  }
+]

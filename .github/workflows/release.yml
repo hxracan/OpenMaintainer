@@ -1,0 +1,32 @@
+name: Prepare release artifacts
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  artifacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openmaintainer-build-${{ github.sha }}
+          path: |
+            apps/api/dist
+            apps/worker/dist
+            packages/cli/dist
+            apps/docs/dist
+          retention-days: 14

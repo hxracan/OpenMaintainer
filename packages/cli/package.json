@@ -1,0 +1,26 @@
+{
+  "name": "@openmaintainer/cli",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "bin": {
+    "openmaintainer": "./dist/main.js"
+  },
+  "scripts": {
+    "build": "tsup --config ../../tsup.config.ts src/main.ts"
+  },
+  "dependencies": {
+    "@openmaintainer/plugin-sdk": "workspace:*",
+    "@openmaintainer/repository-analysis": "workspace:*",
+    "@openmaintainer/pr-analysis": "workspace:*",
+    "@openmaintainer/issue-triage": "workspace:*",
+    "@openmaintainer/ci-analysis": "workspace:*",
+    "@openmaintainer/release-engine": "workspace:*",
+    "@openmaintainer/shared": "workspace:*",
+    "@openmaintainer/core": "workspace:*",
+    "@openmaintainer/github": "workspace:*",
+    "@openmaintainer/database": "workspace:*",
+    "@openmaintainer/config": "workspace:*"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "license-policy",
+  "version": "0.1.0",
+  "description": "Flags absent license files and unlicensed Node manifests.",
+  "entry": "index.mjs",
+  "capabilities": ["analyzer"]
+}

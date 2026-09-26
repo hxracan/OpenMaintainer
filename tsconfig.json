@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "packages/**/*.ts",
+    "apps/api/**/*.ts",
+    "apps/worker/**/*.ts",
+    "apps/dashboard/**/*.ts",
+    "apps/dashboard/**/*.tsx",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "examples/**/*.ts"
+  ],
+  "exclude": ["**/node_modules", "**/dist", "**/.next", "fixtures"]
+}

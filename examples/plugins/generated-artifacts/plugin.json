@@ -1,0 +1,7 @@
+{
+  "name": "generated-artifacts",
+  "version": "0.1.0",
+  "description": "Flags checked-in archives, executables, and dependency directories.",
+  "entry": "index.mjs",
+  "capabilities": ["analyzer"]
+}

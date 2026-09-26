@@ -1,0 +1,7 @@
+{
+  "name": "changelog-policy",
+  "version": "0.1.0",
+  "description": "Checks changelog conventions and provides a pure release-file condition.",
+  "entry": "index.mjs",
+  "capabilities": ["analyzer", "condition", "command"]
+}

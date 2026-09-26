@@ -1,0 +1,22 @@
+version: 1
+dryRun: true
+rules:
+  - id: welcome-first-contribution
+    when: pull_request.opened
+    if:
+      - field: firstTimeContributor
+        operator: eq
+        value: true
+    then:
+      - type: postComment
+        value: "Thanks {{author}}! Please include reproduction steps and tests where appropriate."
+  - id: investigate-ci
+    when: workflow_run.failure
+    then:
+      - type: sendNotification
+        value: "A workflow failed in {{repository}}. Review the CI diagnostics."
+  - id: scan-daily
+    when: scheduled.scan
+    then:
+      - type: sendNotification
+        value: "Scheduled analysis completed for {{repository}}."

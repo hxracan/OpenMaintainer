@@ -1,0 +1,17 @@
+{
+  "name": "@openmaintainer/automation-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "build": "tsup --config ../../tsup.config.ts src/index.ts"
+  },
+  "dependencies": {
+    "@openmaintainer/rule-engine": "workspace:*",
+    "@openmaintainer/config": "workspace:*",
+    "@openmaintainer/core": "workspace:*",
+    "@openmaintainer/shared": "workspace:*",
+    "@openmaintainer/database": "workspace:*"
+  }
+}

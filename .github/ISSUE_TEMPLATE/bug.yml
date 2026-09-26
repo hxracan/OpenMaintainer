@@ -1,0 +1,30 @@
+name: Bug report
+description: Report a reproducible defect using non-sensitive data
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include tokens, private source, or raw private logs. See SECURITY.md for vulnerabilities."
+  - type: input
+    id: revision
+    attributes:
+      label: Revision and runtime
+      description: Commit/version, OS, Node and pnpm versions
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Minimal fixture or redacted error code

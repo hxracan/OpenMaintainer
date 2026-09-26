@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+.git
+.env
+.env.*
+!.env.example
+.demo
+test-results
+playwright-report
+coverage
+*.log

@@ -1,0 +1,9 @@
+{
+  "name": "@openmaintainer/docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsx ../../scripts/build-docs.ts"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@openmaintainer/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup --config ../../tsup.config.ts src/main.ts",
+    "start": "node dist/main.js",
+    "dev": "tsx watch src/main.ts"
+  },
+  "dependencies": {
+    "@openmaintainer/ai": "workspace:*",
+    "@openmaintainer/shared": "workspace:*",
+    "@openmaintainer/core": "workspace:*",
+    "@openmaintainer/config": "workspace:*",
+    "@openmaintainer/database": "workspace:*",
+    "@openmaintainer/github": "workspace:*",
+    "@openmaintainer/github-app": "workspace:*",
+    "@openmaintainer/repository-analysis": "workspace:*"
+  }
+}

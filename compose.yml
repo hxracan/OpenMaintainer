@@ -1,0 +1,72 @@
+name: openmaintainer
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: openmaintainer
+      POSTGRES_DB: openmaintainer
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a strong POSTGRES_PASSWORD in .env}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openmaintainer"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  migrate:
+    build: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL using postgres as the hostname}
+    command: ["node", "--import", "tsx", "scripts/migrate.ts"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+  api:
+    build: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      HOST: 0.0.0.0
+      PORT: 4000
+      DASHBOARD_URL: ${DASHBOARD_URL}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY}
+    ports: ["127.0.0.1:4000:4000"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+  worker:
+    build: .
+    command: ["node", "apps/worker/dist/main.js"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      GITHUB_APP_ID: ${GITHUB_APP_ID}
+      GITHUB_PRIVATE_KEY: ${GITHUB_PRIVATE_KEY}
+      ALLOW_AUTOMATION_WRITES: ${ALLOW_AUTOMATION_WRITES:-false}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+  dashboard:
+    build: .
+    command: ["node", "apps/dashboard/node_modules/next/dist/bin/next", "start", "apps/dashboard", "--hostname", "0.0.0.0"]
+    environment:
+      API_URL: http://api:4000
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  database:
