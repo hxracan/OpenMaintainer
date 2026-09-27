@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
+import { demoApiPort, demoPort } from './demo-ports.js';
 
 const children = [
   spawn(process.execPath, ['--import', 'tsx', resolve('scripts/demo-server.ts')], { stdio: 'inherit' }),
@@ -11,12 +12,12 @@ const children = [
       '--hostname',
       '127.0.0.1',
       '--port',
-      '3000',
+      String(demoPort),
     ],
     {
       cwd: resolve('apps/dashboard'),
       stdio: 'inherit',
-      env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' },
+      env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1', API_URL: `http://127.0.0.1:${demoApiPort}` },
     },
   ),
 ];
@@ -32,4 +33,4 @@ for (const child of children) {
   child.on('error', () => stop(1));
   child.on('exit', (code) => stop(code ?? 0));
 }
-console.log('OpenMaintainer demo: http://localhost:3000');
+console.log(`OpenMaintainer demo: http://localhost:${demoPort}`);

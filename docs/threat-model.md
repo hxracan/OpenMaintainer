@@ -14,6 +14,7 @@ Treat GitHub issue/PR text, filenames, diffs, manifests, logs, webhook metadata 
 - Cookie-authenticated writes require the exact dashboard Origin. Unsupported authorization headers cannot bypass CSRF checks.
 - Parameterized SQL; strict schemas; body/input/file count limits; no repository script execution; symlink skipping; path validation.
 - Fixed API origins, no token-bearing cross-origin redirects, and bounded signed-log downloads.
+- The anonymous public checker uses a fixed GitHub API origin, no credentials or redirects, bounded streamed responses, a shared deadline, per-peer throttling and a two-scan process concurrency limit. It reads no workspace data and never persists scanned repositories. Public exposure can still exhaust anonymous GitHub quotas; operators should apply edge rate limits. Dashboard-proxied users share the proxy's peer-IP allowance.
 - Explicit dry-run and operator-write gates; immutable event keys; persistent pre-action claims and ambiguous-outcome blocking.
 - AI receives untrusted material as user data, with no tools; outputs are validated and never executable policy.
 - Plugin registration is local/trust-explicit. Worker-thread containment handles ordinary failures, not adversarial host access.

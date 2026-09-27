@@ -9,6 +9,8 @@
     "TOKEN_ENCRYPTION_KEY",
     "API_URL",
     "DASHBOARD_URL",
+    "DEMO_PORT",
+    "DEMO_API_PORT",
     "PORT",
     "HOST",
     "NODE_ENV",

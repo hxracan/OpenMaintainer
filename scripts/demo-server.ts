@@ -9,6 +9,7 @@ import type { Database } from '../packages/database/src/index.js';
 import { migrate } from '../packages/database/src/index.js';
 import { GitHubClient } from '../packages/github/src/index.js';
 import { demoFiles, seedDemo } from './demo-data.js';
+import { demoApiPort, demoPort } from './demo-ports.js';
 
 if (process.env.NODE_ENV === 'production' || process.env.DATABASE_URL)
   throw new Error('Demo requires a development environment without DATABASE_URL');
@@ -30,7 +31,7 @@ const app = await createServer({
   db,
   auth,
   webhookSecret: '',
-  dashboardUrl: 'http://localhost:3000',
+  dashboardUrl: `http://localhost:${demoPort}`,
   demo: true,
 });
 app.addHook('onRequest', async (request) => {
@@ -43,8 +44,8 @@ const githubClient = new GitHubClient({
   }),
   github = { app: githubClient, installation: () => githubClient };
 const controller = new AbortController();
-await app.listen({ host: '127.0.0.1', port: 4000 });
-console.log('Demo API: http://127.0.0.1:4000');
+await app.listen({ host: '127.0.0.1', port: demoApiPort });
+console.log(`Demo API: http://127.0.0.1:${demoApiPort}`);
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => controller.abort());
 try {
   await runWorker(

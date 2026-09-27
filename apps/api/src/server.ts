@@ -12,6 +12,7 @@ import Fastify, { type FastifyRequest, LogController } from 'fastify';
 import { z } from 'zod';
 import type { Access, Auth, Identity, OAuthOptions } from './auth.js';
 import { registerOAuth } from './auth.js';
+import { scanPublicRepository } from './public-scan.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -27,6 +28,7 @@ export interface ServerOptions {
   demo?: boolean;
   oauth?: OAuthOptions;
   logger?: boolean;
+  publicScanFetch?: typeof fetch;
 }
 const pageSchema = z.object({
   offset: z.coerce.number().int().min(0).max(100000).default(0),
@@ -112,6 +114,25 @@ export async function createServer(options: ServerOptions) {
     });
   });
   if (options.oauth) await registerOAuth(app, db, options.oauth);
+  let activePublicScans = 0;
+  app.post(
+    '/api/public-scan',
+    { bodyLimit: 2048, config: { rateLimit: { max: 6, timeWindow: '1 minute' } } },
+    async (request) => {
+      const { repository } = z
+        .object({ repository: z.string().min(1).max(250) })
+        .strict()
+        .parse(request.body);
+      if (activePublicScans >= 2)
+        throw new AppError('SCAN_BUSY', 'The checker is busy. Please try again shortly.', 429);
+      activePublicScans++;
+      try {
+        return { data: await scanPublicRepository(repository, options.publicScanFetch) };
+      } finally {
+        activePublicScans--;
+      }
+    },
+  );
   app.register(async (api) => {
     api.addHook('preHandler', async (request) => {
       request.identity = await options.auth.identify(request);

@@ -2,7 +2,11 @@
 
 ## Local demo
 
-Use Node 24 and pnpm 11.15.1. Run `pnpm install --frozen-lockfile` then `pnpm demo`. Ports 3000 and 4000 must be free. The demo refuses NODE_ENV=production or DATABASE_URL, binds loopback and cannot make integration calls. Its fictional records are not project adoption data.
+Use Node 24 and pnpm 11.15.1. Run `pnpm install --frozen-lockfile` then `pnpm demo`. Ports 3000 and 4000 must be free. The demo refuses NODE_ENV=production or DATABASE_URL and binds loopback. GitHub writes and AI calls are disabled. Its fictional records are not project adoption data.
+
+To check your own public repository, open **Repository checker**, paste its GitHub URL and click **Check repository**. This feature makes anonymous read-only requests to GitHub, including in demo mode. No GitHub App is needed for its six file-presence checks. Reports are not saved into the demo database. It does not audit code or inspect private repositories.
+
+If another checkout is already running a demo, set distinct `DEMO_PORT` and `DEMO_API_PORT` environment variables before `pnpm demo` or `pnpm test:e2e`. Both default to 3000 and 4000 respectively, must differ, and must be between 1024 and 65535. Run concurrent demos from separate checkouts so they do not share the embedded database or Next.js build files.
 
 ## GitHub App
 

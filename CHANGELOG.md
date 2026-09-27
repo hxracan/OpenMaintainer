@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added a public repository URL checker with six maintenance-file checks, anonymous bounded GitHub reads, actionable findings and explicit analysis limits. Available without sign-in, including in demo mode.
+
 - Added Getting Started guidance inside the dashboard.
 - Added draft automation previews with per-condition explanations and enforced dry-run behavior.
 - Exposed issue duplicate analysis and saved candidates in the dashboard.

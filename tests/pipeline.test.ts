@@ -91,6 +91,41 @@ async function server(writable = true) {
     },
   });
 }
+it('allows anonymous public checks without accessing or modifying private workspace data', async () => {
+  const identify = vi.fn().mockRejectedValue(new Error('No session'));
+  const publicScanFetch = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(Response.json({ private: false, default_branch: 'main', archived: false }))
+    .mockResolvedValueOnce(Response.json({ sha: 'abc', truncated: false, tree: [] }));
+  const app = await createServer({
+    db,
+    webhookSecret: secret,
+    dashboardUrl: 'http://localhost:3000',
+    auth: { identify, access: async () => ({ repositoryIds: [], writableIds: [] }) },
+    publicScanFetch,
+  });
+  try {
+    const before = (await db.query('SELECT count(*) AS count FROM repositories')).rows;
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/public-scan',
+      payload: { repository: 'a/public' },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().data.findings).toHaveLength(6);
+    expect(identify).not.toHaveBeenCalled();
+    expect((await db.query('SELECT count(*) AS count FROM repositories')).rows).toEqual(before);
+    const invalid = await app.inject({
+      method: 'POST',
+      url: '/api/public-scan',
+      payload: { repository: 'https://localhost/private' },
+    });
+    expect(invalid.statusCode).toBe(400);
+    expect(publicScanFetch).toHaveBeenCalledTimes(2);
+  } finally {
+    await app.close();
+  }
+});
 it('filters lists and hides inaccessible repository existence', async () => {
   const app = await server();
   try {

@@ -1,6 +1,8 @@
 # HTTP API
 
-Base URL is the API service (local port 4000) or the dashboard's same-origin /api proxy. JSON only; API bodies are capped at 2 MB. All /api resources except auth/login and auth/callback require authentication.
+Base URL is the API service (local port 4000) or the dashboard's same-origin /api proxy. JSON only; API bodies are capped at 2 MB. All /api resources except auth/login, auth/callback and public-scan require authentication.
+
+`POST /api/public-scan` accepts `{ "repository": "https://github.com/owner/repository" }` (or `owner/repository`). It returns `{ data: { repository, branch, treeSha, checkedAt, fileCount, languages, archived, checks, findings, scope } }`. No credentials are forwarded to GitHub and no workspace records are read or written. Limits: 2 KB request, six requests/minute per peer IP, two concurrent scans per API process, 18-second upstream deadline, 5 MB per response, 10,000 tree entries. Behind the dashboard proxy, clients share its peer-IP allowance. Truncated trees produce an error. This route is available in demo mode and requires internet access; GitHub anonymous rate limits also apply.
 
 Use the GitHub OAuth session in the browser, or Authorization: Bearer GITHUB_USER_TOKEN for scripts. The token must represent a user with access to an active installed repository. Browser mutations require Origin matching DASHBOARD_URL. Do not put tokens in URLs.
 
@@ -10,6 +12,7 @@ Use the GitHub OAuth session in the browser, or Authorization: Bearer GITHUB_USE
 | --- | --- | --- |
 | GET | /health, /ready | Process and database readiness |
 | POST | /webhooks/github | Signed raw GitHub JSON intake |
+| POST | /api/public-scan | Anonymous, read-only public repository file-tree check |
 | GET | /api/auth/login, /api/auth/callback | OAuth flow |
 | POST | /api/auth/logout | Expire session |
 | GET | /api/session | Current identity |

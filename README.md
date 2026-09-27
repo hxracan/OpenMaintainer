@@ -18,7 +18,13 @@ pnpm install --frozen-lockfile
 pnpm demo
 ```
 
-Open [localhost:3000](http://localhost:3000). The isolated demo uses embedded PostgreSQL under `.demo/`, fictional records, and the real API/worker. It cannot call GitHub or OpenAI. Analyze the demo repository or issue to exercise the queue. Do not expose demo ports publicly.
+Open [localhost:3000](http://localhost:3000). The isolated demo uses embedded PostgreSQL under `.demo/`, fictional records, and the real API/worker. GitHub writes and OpenAI calls are disabled. The **Repository checker** makes anonymous read-only GitHub requests when you submit a public repository; its results are separate from the fictional demo records. Analyze the demo repository or issue to exercise the queue. Do not expose demo ports publicly.
+
+## Check a public repository
+
+Open **Repository checker** in the sidebar, paste `https://github.com/owner/repository` (or `owner/repository`), then click **Check repository**. No credentials or App installation are required. The report checks for README, license, contribution instructions, security policy, CODEOWNERS and CI workflow files, with explanations of missing items. It also identifies file extensions/languages and archived status.
+
+This checks the default-branch file tree, not code correctness, file quality, dependency vulnerabilities or live CI results. It never executes repository code or saves/imports the repository. Private repositories use the authenticated GitHub App workflow. Anonymous GitHub limits apply; oversized/truncated trees are rejected rather than reported as complete.
 
 ## What works
 

@@ -1,5 +1,45 @@
 import { expect, test } from '@playwright/test';
 
+test('checks a pasted repository and displays findings and actionable errors', async ({ page }) => {
+  // Browser fixture only; API tests exercise the scanner with mocked GitHub responses.
+  await page.route('**/api/public-scan', async (route) => {
+    if (route.request().postDataJSON().repository === 'bad')
+      return route.fulfill({ status: 404, json: { error: { message: 'Public repository not found' } } });
+    return route.fulfill({
+      json: {
+        data: {
+          repository: 'example/library',
+          branch: 'main',
+          fileCount: 2,
+          languages: ['TypeScript'],
+          checks: [{ id: 'security', present: false }],
+          findings: [
+            {
+              ruleId: 'repository.missing-security',
+              title: 'Missing security',
+              explanation: 'Provide private vulnerability reporting instructions.',
+            },
+          ],
+          scope: 'File-tree maintenance check only.',
+          treeSha: 'abc',
+          checkedAt: '2026-09-27',
+        },
+      },
+    });
+  });
+  await page.goto('/repository-checker');
+  await page
+    .getByLabel('GitHub repository URL or owner/repository')
+    .fill('https://github.com/example/library');
+  await page.getByRole('button', { name: 'Check repository', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Report: example/library' })).toBeVisible();
+  await expect(page.getByText('Provide private vulnerability reporting instructions.')).toBeVisible();
+  await page.getByLabel('GitHub repository URL or owner/repository').fill('bad');
+  await expect(page.getByRole('heading', { name: 'Report: example/library' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Check repository', exact: true }).click();
+  await expect(page.locator('article').getByRole('alert')).toContainText('Public repository not found');
+});
+
 test('shows real seeded data and navigates repository findings', async ({ page }) => {
   await page.goto('/dashboard');
   await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible();

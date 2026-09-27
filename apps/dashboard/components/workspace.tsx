@@ -5,9 +5,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, type Item, list, record, string } from './client';
 import { JobButton } from './job-button';
 import { DuplicateInspector, GettingStarted, JobList, RulePreview } from './maintainer-tools';
+import { RepositoryChecker } from './repository-checker';
 
 const sections = [
   ['getting-started', 'Getting started', '→'],
+  ['repository-checker', 'Repository checker', '⌕'],
   ['dashboard', 'Overview', '◈'],
   ['repositories', 'Repositories', '▣'],
   ['pull-requests', 'Pull requests', '⑂'],
@@ -23,6 +25,7 @@ const sections = [
   ['settings', 'Settings', '⚙'],
 ] as const;
 const descriptions: Record<string, string> = {
+  'repository-checker': 'Paste a public repository URL to find maintenance gaps.',
   'getting-started': 'Your first useful result, and how to connect your own repositories.',
   dashboard: 'A clear view of the work that needs your attention.',
   repositories: 'Repository structure, maintenance signals, and analysis.',
@@ -63,7 +66,7 @@ export function Workspace({ segments }: { segments: string[] }) {
     let active = true;
     setLoading(true);
     setError('');
-    if (section === 'getting-started') {
+    if (section === 'getting-started' || section === 'repository-checker') {
       setLoading(false);
       void api('session')
         .then((s) => {
@@ -166,7 +169,9 @@ export function Workspace({ segments }: { segments: string[] }) {
             </div>
           ) : (
             <>
-              {section === 'getting-started' ? (
+              {section === 'repository-checker' ? (
+                <RepositoryChecker />
+              ) : section === 'getting-started' ? (
                 <GettingStarted demo={demo} />
               ) : section === 'jobs' ? (
                 <JobList rows={rows} onChange={reload} />
@@ -288,9 +293,15 @@ export function Workspace({ segments }: { segments: string[] }) {
                 <RecordTable rows={rows} section={section} />
               )}
               {!detail &&
-                !['dashboard', 'settings', 'getting-started', 'analytics', 'plugins', 'automations'].includes(
-                  section,
-                ) && (
+                ![
+                  'dashboard',
+                  'settings',
+                  'getting-started',
+                  'repository-checker',
+                  'analytics',
+                  'plugins',
+                  'automations',
+                ].includes(section) && (
                   <div className="pagination">
                     <button
                       type="button"
