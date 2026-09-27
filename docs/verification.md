@@ -16,6 +16,10 @@ Development environment: Windows, Node 24.14.1, pnpm 11.15.1.
 
 Tests use actual embedded PostgreSQL through PGlite; external HTTP boundaries are mocked. The demo's records are explicitly fictional. Browser startup waits for the API route, and tests do not reuse an unrelated running instance.
 
+## Executed on GitHub Actions
+
+[CI run 36278126622](https://github.com/hxracan/OpenMaintainer/actions/runs/36278126622) for commit fb373777966bb5931cc13d24edfe16a6571bef56 passed on Ubuntu with Node 24. Its recorded successful steps include frozen installation, lint, type checking, unit tests, the disposable PostgreSQL 17 concurrency test (`pnpm test:postgres`), production build, Chromium installation and all browser tests. [Dependency security](https://github.com/hxracan/OpenMaintainer/actions/runs/36278126735) also passed for that commit.
+
 ## Review findings addressed
 
 Bounded the dashboard proxy while streaming request bodies; expanded quoted-token/private-key redaction; rejected unsupported YAML tags; fenced stale PR events; invalidated changed action plans; reserved AI requests before provider calls to block ambiguous replay; fixed dashboard refresh and a conflicting CLI release-version flag. Regression tests cover these behavior classes. No inappropriate TODO/FIXME stubs, ts-ignore directives or disabled tests were found in source.
@@ -24,7 +28,7 @@ Bounded the dashboard proxy while streaming request bodies; expanded quoted-toke
 
 - Real GitHub App installation, OAuth exchange, permission behavior and live external writes.
 - Paid OpenAI requests with an operator's chosen model.
-- Docker Compose startup and multi-process networked PostgreSQL in this local environment.
+- Docker Compose startup (Docker was unavailable locally).
 - Independent security audit, exhaustive compatibility or sustained load testing.
 
-CI includes a disposable networked PostgreSQL service and concurrency test. Its presence is not a claim that GitHub Actions has already passed.
+The passing networked PostgreSQL check does not validate a live GitHub App or the full Docker Compose deployment.
