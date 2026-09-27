@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { decryptToken, encryptToken } from '../apps/api/src/auth.js';
 import { createServer } from '../apps/api/src/server.js';
+import { parseConfig } from '../packages/config/src/index.js';
 import type { Database } from '../packages/database/src/index.js';
 import { cancel, claim, enqueue, finish } from '../packages/database/src/index.js';
 import { acceptWebhook, verifySignature } from '../packages/github-app/src/index.js';
@@ -162,5 +163,97 @@ it('rejects unauthenticated API requests', async () => {
     expect(response.body).not.toContain('secret should');
   } finally {
     await app.close();
+  }
+});
+it('previews unsaved rules without creating jobs, saving config, or enabling writes', async () => {
+  const app = await server(false);
+  const before = (await db.query('SELECT count(*)::int AS count FROM jobs')).rows[0];
+  const config = parseConfig(
+    'version: 1\ndryRun: false\nrules:\n  - id: large\n    when: pull_request.opened\n    if:\n      - field: changedFiles\n        operator: gt\n        value: 50\n    then:\n      - type: addLabel\n        value: large',
+  );
+  const savedBefore = (await db.query('SELECT config FROM repositories WHERE id=1')).rows[0];
+  try {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/repositories/a/public/automations/preview',
+      headers: { origin: 'http://localhost:3000' },
+      payload: { trigger: 'pull_request.opened', facts: { changedFiles: 60 }, config },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().plans).toHaveLength(1);
+    expect(response.json().plans[0].dryRun).toBe(true);
+    expect(response.json().evaluations[0].conditions[0].matched).toBe(true);
+    const noMatch = await app.inject({
+      method: 'POST',
+      url: '/api/repositories/a/public/automations/preview',
+      headers: { origin: 'http://localhost:3000' },
+      payload: { trigger: 'pull_request.opened', facts: { changedFiles: 2 }, config },
+    });
+    expect(noMatch.json().plans).toHaveLength(0);
+    expect((await db.query('SELECT count(*)::int AS count FROM jobs')).rows[0]).toEqual(before);
+    expect((await db.query('SELECT config FROM repositories WHERE id=1')).rows[0]).toEqual(savedBefore);
+  } finally {
+    await app.close();
+  }
+});
+it('scopes rule previews and rejects unrecognized facts', async () => {
+  const app = await server();
+  try {
+    const request = {
+      method: 'POST' as const,
+      headers: { origin: 'http://localhost:3000' },
+      payload: { trigger: 'issues.opened', facts: {} },
+    };
+    expect(
+      (await app.inject({ ...request, url: '/api/repositories/b/private/automations/preview' })).statusCode,
+    ).toBe(404);
+    expect(
+      (
+        await app.inject({
+          ...request,
+          url: '/api/repositories/a/public/automations/preview',
+          payload: { trigger: 'issues.opened', facts: { shell: 'arbitrary' } },
+        })
+      ).statusCode,
+    ).toBe(400);
+  } finally {
+    await app.close();
+  }
+});
+it('returns stored duplicate candidates only in the authorized issue scope', async () => {
+  await db.query("INSERT INTO issues(repository_id,number,data) VALUES(1,91,'{}'),(2,91,'{}')");
+  await db.query(
+    "INSERT INTO analyses(repository_id,kind,subject,fingerprint,result) VALUES(1,'issue.duplicates','91','fixture',$1)",
+    [JSON.stringify({ candidates: [{ number: 92, score: 0.8 }], scope: 'fixture' })],
+  );
+  const app = await server();
+  try {
+    expect(
+      (await app.inject('/api/issues/a/public/91/duplicates')).json().data.result.candidates[0].number,
+    ).toBe(92);
+    expect((await app.inject('/api/issues/b/private/91/duplicates')).statusCode).toBe(404);
+    expect((await app.inject('/api/issues/a/public/999/duplicates')).statusCode).toBe(404);
+  } finally {
+    await app.close();
+  }
+});
+it('lists job repository names and permits cancellation only for writable queued jobs', async () => {
+  const id = await enqueue(db, 'repository.index', {}, 1),
+    app = await server(),
+    reader = await server(false);
+  const request = {
+    method: 'POST' as const,
+    url: `/api/jobs/${id}/cancel`,
+    headers: { origin: 'http://localhost:3000' },
+  };
+  try {
+    expect((await reader.inject(request)).statusCode).toBe(403);
+    const jobs = (await app.inject('/api/jobs')).json().data as { id: string; full_name: string }[];
+    expect(jobs.find((j) => j.id === id)?.full_name).toBe('a/public');
+    expect((await app.inject(request)).statusCode).toBe(200);
+    expect((await app.inject(request)).statusCode).toBe(409);
+  } finally {
+    await app.close();
+    await reader.close();
   }
 });

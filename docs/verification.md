@@ -8,9 +8,9 @@ Development environment: Windows, Node 24.14.1, pnpm 11.15.1.
 
 - Foundation, analysis, policy/service and dashboard phases passed lint, strict type checking, unit/integration tests and production builds.
 - Final lint and strict TypeScript checks: passed.
-- Final unit/integration/CLI suite: 47 tests passed across ten files.
+- Latest unit/integration/CLI suite: 51 tests passed across ten files.
 - Production build: all 20 build tasks passed, including Next.js and 13 documentation pages.
-- Chromium: all three browser scenarios passed (navigation, real background-job completion, mobile policy editing).
+- Chromium: all five browser scenarios passed (navigation, real background-job completion, guided setup and draft rule previews, duplicate checks and job history, mobile policy editing).
 - Dependency audit at low severity: no known vulnerabilities reported after overriding the affected development esbuild version.
 - Manual CLI checks: local scan, release preparation, shipped policy validation and diagnostic/version flags.
 

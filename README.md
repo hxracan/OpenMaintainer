@@ -30,6 +30,7 @@ Open [localhost:3000](http://localhost:3000). The isolated demo uses embedded Po
 - GitHub App: signed webhooks, installation synchronization, scoped OAuth access, durable jobs and audit records.
 - Rules: versioned YAML, deterministic conditions, dry-run plans and guarded external actions with an ambiguity ledger.
 - Dashboard: live repository/PR/issue/CI views, configuration, job status, notifications, analytics and analysis history.
+- Guided onboarding, draft rule previews with condition explanations, issue duplicate checks, and searchable job cards with history and queued-job cancellation.
 - Optional AI: six advisory workflows, schema-validated output, usage reservations and no tool execution.
 - Trusted local plugins: worker-thread timeout/crash containment, SDK and three working examples.
 

@@ -93,6 +93,9 @@ importers:
       '@openmaintainer/ai':
         specifier: workspace:*
         version: link:../../packages/ai
+      '@openmaintainer/automation-engine':
+        specifier: workspace:*
+        version: link:../../packages/automation-engine
       '@openmaintainer/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -111,6 +114,9 @@ importers:
       '@openmaintainer/repository-analysis':
         specifier: workspace:*
         version: link:../../packages/repository-analysis
+      '@openmaintainer/rule-engine':
+        specifier: workspace:*
+        version: link:../../packages/rule-engine
       '@openmaintainer/shared':
         specifier: workspace:*
         version: link:../../packages/shared

@@ -1,9 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-type Item = Record<string, unknown>;
+import { api, type Item, list, record, string } from './client';
+import { JobButton } from './job-button';
+import { DuplicateInspector, GettingStarted, JobList, RulePreview } from './maintainer-tools';
+
 const sections = [
+  ['getting-started', 'Getting started', '→'],
   ['dashboard', 'Overview', '◈'],
   ['repositories', 'Repositories', '▣'],
   ['pull-requests', 'Pull requests', '⑂'],
@@ -18,31 +22,8 @@ const sections = [
   ['audit-log', 'Audit log', '≡'],
   ['settings', 'Settings', '⚙'],
 ] as const;
-function record(value: unknown): Item {
-  return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Item) : {};
-}
-function string(value: unknown): string {
-  return typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '';
-}
-function list(value: unknown): Item[] {
-  return Array.isArray(value) ? value.map(record) : [];
-}
-async function api(path: string, options?: RequestInit): Promise<Item> {
-  const response = await fetch(`/api/${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    cache: 'no-store',
-  });
-  const body = record(await response.json());
-  if (!response.ok)
-    throw new Error(
-      response.status === 401
-        ? 'Sign in to continue'
-        : string(record(body.error).message) || 'Request failed',
-    );
-  return body;
-}
 const descriptions: Record<string, string> = {
+  'getting-started': 'Your first useful result, and how to connect your own repositories.',
   dashboard: 'A clear view of the work that needs your attention.',
   repositories: 'Repository structure, maintenance signals, and analysis.',
   'pull-requests': 'Understand change scope before you start a review.',
@@ -64,7 +45,7 @@ export function Workspace({ segments }: { segments: string[] }) {
     [data, setData] = useState<Item>({}),
     [loading, setLoading] = useState(true),
     [error, setError] = useState(''),
-    [_refresh, setRefresh] = useState(0),
+    [refresh, setRefresh] = useState(0),
     [offset, setOffset] = useState(0);
   const title = detail
     ? segments.slice(1).join('/')
@@ -82,7 +63,18 @@ export function Workspace({ segments }: { segments: string[] }) {
     let active = true;
     setLoading(true);
     setError('');
-    Promise.all([api('session'), api(`${endpoint}?limit=30&offset=${offset}`)])
+    if (section === 'getting-started') {
+      setLoading(false);
+      void api('session')
+        .then((s) => {
+          if (active) setSession(s);
+        })
+        .catch(() => {});
+      return () => {
+        active = false;
+      };
+    }
+    Promise.all([api('session'), api(`${endpoint}?limit=30&offset=${offset}&refresh=${refresh}`)])
       .then(([s, d]) => {
         if (active) {
           setSession(s);
@@ -98,7 +90,7 @@ export function Workspace({ segments }: { segments: string[] }) {
     return () => {
       active = false;
     };
-  }, [endpoint, offset]);
+  }, [endpoint, offset, refresh, section]);
   const rows = list(data.data),
     repo = record(data.data),
     counts = record(data.data),
@@ -174,7 +166,11 @@ export function Workspace({ segments }: { segments: string[] }) {
             </div>
           ) : (
             <>
-              {section === 'dashboard' ? (
+              {section === 'getting-started' ? (
+                <GettingStarted demo={demo} />
+              ) : section === 'jobs' ? (
+                <JobList rows={rows} onChange={reload} />
+              ) : section === 'dashboard' ? (
                 <>
                   <div className="metrics">
                     {[
@@ -291,23 +287,28 @@ export function Workspace({ segments }: { segments: string[] }) {
               ) : (
                 <RecordTable rows={rows} section={section} />
               )}
-              {!detail && !['dashboard', 'settings'].includes(section) && (
-                <div className="pagination">
-                  <button
-                    type="button"
-                    disabled={offset === 0}
-                    onClick={() => setOffset(Math.max(0, offset - 30))}
-                  >
-                    ← Previous
-                  </button>
-                  <span>
-                    Showing {offset + 1}–{offset + rows.length}
-                  </span>
-                  <button type="button" disabled={rows.length < 30} onClick={() => setOffset(offset + 30)}>
-                    Next →
-                  </button>
-                </div>
-              )}
+              {!detail &&
+                !['dashboard', 'settings', 'getting-started', 'analytics', 'plugins', 'automations'].includes(
+                  section,
+                ) && (
+                  <div className="pagination">
+                    <button
+                      type="button"
+                      disabled={offset === 0}
+                      onClick={() => setOffset(Math.max(0, offset - 30))}
+                    >
+                      ← Previous
+                    </button>
+                    <span>
+                      {rows.length
+                        ? `Showing ${offset + 1}–${offset + rows.length}`
+                        : 'No records on this page'}
+                    </span>
+                    <button type="button" disabled={rows.length < 30} onClick={() => setOffset(offset + 30)}>
+                      Next →
+                    </button>
+                  </div>
+                )}
             </>
           )}
         </section>
@@ -442,6 +443,9 @@ function RecordTable({ rows, section }: { rows: Item[]; section: string }) {
                   {['pull-requests', 'issues', 'ci'].includes(section) && (
                     <AnalysisInspector path={`${section}/${string(r.full_name)}/${number}`} />
                   )}
+                  {section === 'issues' && (
+                    <DuplicateInspector repository={string(r.full_name)} number={number} />
+                  )}
                   <details>
                     <summary>Inspect record</summary>
                     <pre>{JSON.stringify(d.title || d.name ? d : r, null, 2)}</pre>
@@ -496,54 +500,6 @@ function AnalysisInspector({ path }: { path: string }) {
         )}
       </details>
     </>
-  );
-}
-function JobButton({
-  path,
-  label,
-  onComplete,
-  body = {},
-  disabled = false,
-}: {
-  path: string;
-  label: string;
-  onComplete?: () => void;
-  body?: unknown;
-  disabled?: boolean;
-}) {
-  const [state, setState] = useState(''),
-    [busy, setBusy] = useState(false);
-  async function run() {
-    setBusy(true);
-    setState('Queueing…');
-    try {
-      const response = await api(path, { method: 'POST', body: JSON.stringify(body) }),
-        id = string(response.jobId);
-      setState('Queued');
-      for (let attempt = 0; attempt < 120; attempt++) {
-        await new Promise((r) => setTimeout(r, 1000));
-        const job = record((await api(`jobs/${id}`)).data);
-        setState(string(job.status));
-        if (['succeeded', 'dead', 'cancelled'].includes(string(job.status))) {
-          if (job.status === 'succeeded') onComplete?.();
-          else setState(string(job.error_code) || string(job.status));
-          return;
-        }
-      }
-      setState('Still running. Refresh to see results.');
-    } catch (e) {
-      setState(e instanceof Error ? e.message : 'Analysis failed');
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <span className="job-control">
-      <button type="button" disabled={busy || disabled} onClick={() => void run()}>
-        {busy ? 'Working…' : label}
-      </button>
-      <span role="status">{state}</span>
-    </span>
   );
 }
 function RepositoryTools({ name, demo }: { name: string; demo: boolean }) {
@@ -640,11 +596,14 @@ function RepositoryTools({ name, demo }: { name: string; demo: boolean }) {
   );
 }
 function Settings({ repositories }: { repositories: Item[] }) {
+  const loadSequence = useRef(0);
   const [selected, setSelected] = useState(''),
     [content, setContent] = useState(''),
     [status, setStatus] = useState('');
   async function load(name: string) {
+    const sequence = ++loadSequence.current;
     setSelected(name);
+    setContent('');
     setStatus('');
     if (!name) {
       setContent('');
@@ -652,9 +611,10 @@ function Settings({ repositories }: { repositories: Item[] }) {
     }
     try {
       const response = await api(`repositories/${name}/config`);
-      setContent(JSON.stringify(response.data, null, 2));
+      if (sequence === loadSequence.current) setContent(JSON.stringify(response.data, null, 2));
     } catch (e) {
-      setStatus(e instanceof Error ? e.message : 'Could not load policy');
+      if (sequence === loadSequence.current)
+        setStatus(e instanceof Error ? e.message : 'Could not load policy');
     }
   }
   async function save() {
@@ -695,6 +655,7 @@ function Settings({ repositories }: { repositories: Item[] }) {
           <button type="button" onClick={() => void save()}>
             Save policy
           </button>
+          <RulePreview key={selected} repository={selected} configText={content} />
         </>
       )}
       <p role="status">{status}</p>

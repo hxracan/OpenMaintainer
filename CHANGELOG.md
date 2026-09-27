@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Added Getting Started guidance inside the dashboard.
+- Added draft automation previews with per-condition explanations and enforced dry-run behavior.
+- Exposed issue duplicate analysis and saved candidates in the dashboard.
+- Added job search within each page, repository names, execution history and queued-job cancellation.
+- Fixed dashboard refresh, stale policy-loading responses and background polling after navigation.
+- Recorded job cancellation in job history atomically.
+
 ## 0.1.0 — initial implementation
 
 - Deterministic repository, PR, issue, CI and release analysis.

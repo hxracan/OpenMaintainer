@@ -98,7 +98,7 @@ export async function cancel(db: Sql, id: string): Promise<boolean> {
   return (
     (
       await db.query(
-        "UPDATE jobs SET status='cancelled',updated_at=now() WHERE id=$1 AND status='queued' RETURNING id",
+        "WITH cancelled AS (UPDATE jobs SET status='cancelled',updated_at=now() WHERE id=$1 AND status='queued' RETURNING id) INSERT INTO job_history(job_id,status) SELECT id,'cancelled' FROM cancelled RETURNING job_id",
         [id],
       )
     ).rows.length === 1

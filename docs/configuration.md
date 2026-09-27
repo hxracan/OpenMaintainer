@@ -2,6 +2,8 @@
 
 The CLI validates `.openmaintainer.yml`. Server policy is explicitly approved via Settings (JSON) or PUT /api/repositories/:owner/:repo/config. Finding a config in a remote tree does not authorize it.
 
+In Settings, select a repository and use **Preview rules** below the policy editor. Choose an example event and enter its facts as JSON. The preview uses your current draft, explains matching and non-matching conditions, and lists proposed actions. It never saves the policy, queues work, or performs actions, even when the draft has dryRun=false.
+
 ```yaml
 version: 1
 dryRun: true

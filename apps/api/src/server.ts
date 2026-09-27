@@ -1,10 +1,12 @@
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
 import { workflows } from '@openmaintainer/ai';
-import { configSchema, defaultConfig, ruleSchema } from '@openmaintainer/config';
+import { planAutomations } from '@openmaintainer/automation-engine';
+import { conditionSchema, configSchema, defaultConfig, ruleSchema, triggers } from '@openmaintainer/config';
 import type { Database } from '@openmaintainer/database';
 import { audit, cancel, enqueue } from '@openmaintainer/database';
 import { acceptWebhook } from '@openmaintainer/github-app';
+import { evaluateRule } from '@openmaintainer/rule-engine';
 import { AppError, asRecord, positiveId, repositoryName } from '@openmaintainer/shared';
 import Fastify, { type FastifyRequest, LogController } from 'fastify';
 import { z } from 'zod';
@@ -237,6 +239,78 @@ export async function createServer(options: ServerOptions) {
         ),
       });
     });
+    api.get('/api/issues/:owner/:repo/:number/duplicates', async (r) => {
+      const repository = await repo(r),
+        number = positiveId.parse(asRecord(r.params).number);
+      if (
+        !(
+          await db.query('SELECT number FROM issues WHERE repository_id=$1 AND number=$2', [
+            repository.id,
+            number,
+          ])
+        ).rows.length
+      )
+        throw new AppError('NOT_FOUND', 'Issue not found', 404);
+      return {
+        data:
+          (
+            await db.query(
+              "SELECT result,created_at FROM analyses WHERE repository_id=$1 AND kind='issue.duplicates' AND subject=$2 ORDER BY created_at DESC LIMIT 1",
+              [repository.id, String(number)],
+            )
+          ).rows[0] ?? null,
+      };
+    });
+    api.post('/api/repositories/:owner/:repo/automations/preview', async (r) => {
+      const repository = await repo(r);
+      const body = z
+        .object({
+          trigger: z.enum(triggers),
+          facts: z.partialRecord(conditionSchema.shape.field, conditionSchema.shape.value).default({}),
+          number: positiveId.optional(),
+          config: configSchema.optional(),
+        })
+        .strict()
+        .parse(r.body);
+      const config = body.config ?? configSchema.parse(repository.config ?? defaultConfig());
+      if (!body.config)
+        config.rules = (
+          await db.query<{ rule: unknown }>('SELECT rule FROM automation_rules WHERE repository_id=$1', [
+            repository.id,
+          ])
+        ).rows.map((row) => ruleSchema.parse(row.rule));
+      const event = {
+        id: 'preview',
+        trigger: body.trigger,
+        repository: repository.full_name,
+        repositoryId: repository.id,
+        installationId: Number(repository.installation_id),
+        actor: r.identity?.login ?? 'preview',
+        subjectNumber: body.number,
+        facts: body.facts,
+      };
+      return {
+        dryRun: true,
+        evaluations: config.rules.map((rule) => ({
+          ...evaluateRule(rule, event),
+          enabled: rule.enabled,
+          expectedTrigger: rule.when,
+        })),
+        plans: planAutomations(config, event, {
+          allowWrites: false,
+          allowedActions: [
+            'addLabel',
+            'removeLabel',
+            'assignUser',
+            'requestReviewer',
+            'postComment',
+            'createIssue',
+            'sendNotification',
+            'queueAnalysis',
+          ],
+        }),
+      };
+    });
     api.get('/api/automations', async (r) => ({
       data: (
         await db.query(
@@ -308,7 +382,7 @@ export async function createServer(options: ServerOptions) {
       return {
         data: (
           await db.query(
-            'SELECT id,kind,repository_id,status,attempts,error_code,created_at,updated_at FROM jobs WHERE repository_id=ANY($1::bigint[]) ORDER BY created_at DESC LIMIT $2 OFFSET $3',
+            'SELECT j.id,j.kind,j.repository_id,j.status,j.attempts,j.error_code,j.created_at,j.updated_at,r.full_name FROM jobs j JOIN repositories r ON r.id=j.repository_id WHERE j.repository_id=ANY($1::bigint[]) ORDER BY j.created_at DESC LIMIT $2 OFFSET $3',
             [ids(r), p.limit, p.offset],
           )
         ).rows,

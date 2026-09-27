@@ -536,6 +536,24 @@ pre {
 .settings {
   max-width: 850px;
 }
+.guide-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+}
+.guide-grid li {
+  margin: 12px 0;
+  line-height: 1.6;
+}
+.tool-section,
+.job-card {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.job-card h3 {
+  margin: 0;
+}
 .settings label {
   display: block;
   font-size: 12px;

@@ -9,6 +9,8 @@
     "dev": "tsx watch src/main.ts"
   },
   "dependencies": {
+    "@openmaintainer/automation-engine": "workspace:*",
+    "@openmaintainer/rule-engine": "workspace:*",
     "@openmaintainer/ai": "workspace:*",
     "@openmaintainer/shared": "workspace:*",
     "@openmaintainer/core": "workspace:*",
