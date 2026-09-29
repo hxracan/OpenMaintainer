@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
-    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/rate-limit": "^11.2.0",
     "@types/picomatch": "^4.0.2",
     "@types/semver": "^7.7.1",
     "commander": "^14.0.0",
