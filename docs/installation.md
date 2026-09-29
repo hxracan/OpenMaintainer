@@ -8,6 +8,8 @@ To check your own public repository, open **Repository checker**, paste its GitH
 
 If another checkout is already running a demo, set distinct `DEMO_PORT` and `DEMO_API_PORT` environment variables before `pnpm demo` or `pnpm test:e2e`. Both default to 3000 and 4000 respectively, must differ, and must be between 1024 and 65535. Run concurrent demos from separate checkouts so they do not share the embedded database or Next.js build files.
 
+The **PR investigation** sidebar page also works without an App: paste a public PR URL, optionally paste an issue description and a redacted failure log, then investigate. Use **Try example report** for an offline demonstration of all five sections. Public mode makes bounded anonymous GitHub requests; results are separate from seeded demo data. See [analysis limits](limitations.md).
+
 ## GitHub App
 
 Create a GitHub App in your own account. Use a private staging repository first.

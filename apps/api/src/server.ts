@@ -12,6 +12,8 @@ import Fastify, { type FastifyRequest, LogController } from 'fastify';
 import { z } from 'zod';
 import type { Access, Auth, Identity, OAuthOptions } from './auth.js';
 import { registerOAuth } from './auth.js';
+import { investigationExample } from './investigation-example.js';
+import { investigatePublicPullRequest } from './public-investigation.js';
 import { scanPublicRepository } from './public-scan.js';
 
 declare module 'fastify' {
@@ -115,6 +117,29 @@ export async function createServer(options: ServerOptions) {
   });
   if (options.oauth) await registerOAuth(app, db, options.oauth);
   let activePublicScans = 0;
+  app.get('/api/investigation-example', async () => ({ data: investigationExample() }));
+  app.post(
+    '/api/public-investigation',
+    { bodyLimit: 300000, config: { rateLimit: { max: 3, timeWindow: '1 minute' } } },
+    async (request) => {
+      const input = z
+        .object({
+          url: z.string().min(1).max(250),
+          issue: z.string().max(50000).optional(),
+          ciLog: z.string().max(200000).optional(),
+        })
+        .strict()
+        .parse(request.body);
+      if (activePublicScans >= 2)
+        throw new AppError('SCAN_BUSY', 'The checker is busy. Please try again shortly.', 429);
+      activePublicScans++;
+      try {
+        return { data: await investigatePublicPullRequest(input, options.publicScanFetch) };
+      } finally {
+        activePublicScans--;
+      }
+    },
+  );
   app.post(
     '/api/public-scan',
     { bodyLimit: 2048, config: { rateLimit: { max: 6, timeWindow: '1 minute' } } },

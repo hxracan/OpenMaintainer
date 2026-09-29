@@ -1,4 +1,5 @@
-import type { Finding, Issue } from '@openmaintainer/core';
+import type { Finding, Issue, SourceFile } from '@openmaintainer/core';
+import { boundedText, hasPathMention, redact, safePath } from '@openmaintainer/shared';
 
 const categories: [string, RegExp][] = [
   ['security', /vulnerab|security|credential leak|exploit/i],
@@ -116,4 +117,73 @@ export function findDuplicates(target: Issue, others: Issue[], threshold = 0.35)
     .filter((c) => c.score >= threshold)
     .sort((a, b) => b.score - a.score || a.number - b.number)
     .slice(0, 10);
+}
+
+export function navigateIssue(text: string, files: SourceFile[]) {
+  boundedText(text, 50000);
+  const query = redact(text);
+  const identifiers = new Set(query.split(/[^\w$]+/));
+  const terms = keywords(query.replace(/([a-z])([A-Z])/g, '$1 $2'));
+  const candidates = files
+    .slice(0, 10000)
+    .flatMap((file) => {
+      safePath(file.path);
+      const reasons: string[] = [];
+      let score = 0;
+      if (hasPathMention(query, file.path)) {
+        reasons.push('The issue text contains this exact repository path.');
+        score += 10;
+      }
+      const pathTerms = [...keywords(file.path.replace(/([a-z])([A-Z])/g, '$1 $2'))].filter(
+        (term) =>
+          ![
+            'src',
+            'lib',
+            'test',
+            'tests',
+            'index',
+            'main',
+            'packages',
+            'apps',
+            'tsx',
+            'jsx',
+            'json',
+          ].includes(term),
+      );
+      const sharedTerms = pathTerms.filter((term) => terms.has(term));
+      if (sharedTerms.length) {
+        score += sharedTerms.length;
+        reasons.push(`Shared path terms: ${sharedTerms.join(', ')}.`);
+      }
+      const evidence: { line: number; text: string; symbol: string }[] = [];
+      for (const [index, line] of file.content.split(/\r?\n/).entries()) {
+        const match = /\b(?:function|class|interface|type|const|let)\s+([A-Za-z_$][\w$]{2,})/.exec(line);
+        if (match?.[1] && identifiers.has(match[1])) {
+          score += 5;
+          evidence.push({ line: index + 1, text: redact(line).slice(0, 500), symbol: match[1] });
+          reasons.push(`The issue names declaration ${match[1]} in available source.`);
+        }
+        if (evidence.length >= 3) break;
+      }
+      return score > 0
+        ? [
+            {
+              path: file.path,
+              score,
+              reasons,
+              evidence,
+              nextStep:
+                'Verify the reproduction against this file and follow its callers. Text matches are investigation leads, not a diagnosis.',
+            },
+          ]
+        : [];
+    })
+    .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path))
+    .slice(0, 10);
+  return {
+    supplied: Boolean(text.trim()),
+    candidates,
+    scope:
+      'Repository paths plus available source contents. Scores rank lexical evidence and are not probabilities. No semantic call graph or root-cause proof.',
+  };
 }

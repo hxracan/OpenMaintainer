@@ -1,6 +1,10 @@
 # HTTP API
 
-Base URL is the API service (local port 4000) or the dashboard's same-origin /api proxy. JSON only; API bodies are capped at 2 MB. All /api resources except auth/login, auth/callback and public-scan require authentication.
+Base URL is the API service (local port 4000) or the dashboard's same-origin /api proxy. JSON only; API bodies are capped at 2 MB. All /api resources except auth/login, auth/callback, public-scan, public-investigation and investigation-example require authentication.
+
+`POST /api/public-investigation` accepts `{ "url": "https://github.com/owner/repository/pull/123", "issue": "optional reproduction", "ciLog": "optional redacted log" }`. Returns `{ data: { source, coverage, contracts, regression, ci, release, issue, limitations } }`. Source revisions are pinned; the base is the PR merge base. A head/base change while collecting produces 409. Body limit: 300 KB; issue: 50,000 characters (and 50 KB in the engine); CI log: 200,000 characters. Three requests/minute per peer IP; shares the two-scan process limit with public-scan. Upstream limits: 18 seconds, 24 requests, 5 MB per response/10 MB total, 10,000 entries per tree, 200 changed files, eight eligible full-version files at 125 KB/version. Private/deleted head repositories, truncated trees and incomplete file lists are not silently accepted. The process never executes source, saves reports, sends AI requests, or uses caller credentials. Pattern redaction is best effort; do not submit secrets.
+
+`GET /api/investigation-example` returns the same five-section report structure using fictional inputs, with `source.example: true`. It does not contact GitHub. Both routes are available in demo mode.
 
 `POST /api/public-scan` accepts `{ "repository": "https://github.com/owner/repository" }` (or `owner/repository`). It returns `{ data: { repository, branch, treeSha, checkedAt, fileCount, languages, archived, checks, findings, scope } }`. No credentials are forwarded to GitHub and no workspace records are read or written. Limits: 2 KB request, six requests/minute per peer IP, two concurrent scans per API process, 18-second upstream deadline, 5 MB per response, 10,000 tree entries. Behind the dashboard proxy, clients share its peer-IP allowance. Truncated trees produce an error. This route is available in demo mode and requires internet access; GitHub anonymous rate limits also apply.
 
@@ -13,6 +17,8 @@ Use the GitHub OAuth session in the browser, or Authorization: Bearer GITHUB_USE
 | GET | /health, /ready | Process and database readiness |
 | POST | /webhooks/github | Signed raw GitHub JSON intake |
 | POST | /api/public-scan | Anonymous, read-only public repository file-tree check |
+| POST | /api/public-investigation | Anonymous PR investigation with optional issue and CI context |
+| GET | /api/investigation-example | Clearly labeled fictional five-section report |
 | GET | /api/auth/login, /api/auth/callback | OAuth flow |
 | POST | /api/auth/logout | Expire session |
 | GET | /api/session | Current identity |

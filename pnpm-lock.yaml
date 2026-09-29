@@ -111,6 +111,9 @@ importers:
       '@openmaintainer/github-app':
         specifier: workspace:*
         version: link:../../packages/github-app
+      '@openmaintainer/pr-analysis':
+        specifier: workspace:*
+        version: link:../../packages/pr-analysis
       '@openmaintainer/repository-analysis':
         specifier: workspace:*
         version: link:../../packages/repository-analysis
@@ -317,9 +320,15 @@ importers:
 
   packages/pr-analysis:
     dependencies:
+      '@openmaintainer/ci-analysis':
+        specifier: workspace:*
+        version: link:../ci-analysis
       '@openmaintainer/core':
         specifier: workspace:*
         version: link:../core
+      '@openmaintainer/issue-triage':
+        specifier: workspace:*
+        version: link:../issue-triage
       '@openmaintainer/shared':
         specifier: workspace:*
         version: link:../shared

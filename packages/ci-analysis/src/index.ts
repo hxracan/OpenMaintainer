@@ -1,5 +1,6 @@
 import { stripVTControlCharacters } from 'node:util';
-import { boundedText, redact } from '@openmaintainer/shared';
+import type { ChangedFile } from '@openmaintainer/core';
+import { boundedText, hasPathMention, redact } from '@openmaintainer/shared';
 
 const patterns: [string, RegExp, string][] = [
   [
@@ -74,5 +75,40 @@ export function analyzeCi(log: string) {
     limitations: groups.size
       ? ['Pattern-based suggestions require verification against the failing step.']
       : ['No known diagnostic pattern matched; inspect the original job log.'],
+  };
+}
+
+export function investigateCi(log: string, files: ChangedFile[]) {
+  const analysis = analyzeCi(log);
+  const lines = stripVTControlCharacters(redact(log)).split(/\r?\n/);
+  const correlations: { path: string; logLine: number; excerpt: string; basis: string; nextStep: string }[] =
+    [];
+  for (const file of files) {
+    const paths = [file.path, ...(file.previousPath ? [file.previousPath] : [])];
+    for (const [index, line] of lines.entries()) {
+      if (paths.some((path) => hasPathMention(line, path))) {
+        correlations.push({
+          path: file.path,
+          logLine: index + 1,
+          excerpt: line.slice(0, 1000),
+          basis:
+            'A changed repository path appears in the supplied log; this is correlation, not proof of causation.',
+          nextStep:
+            'Inspect this diagnostic and the diff together. Reproduce the failing step at the recorded head, then compare against the base.',
+        });
+        break;
+      }
+    }
+    if (correlations.length >= 20) break;
+  }
+  return {
+    ...analysis,
+    supplied: Boolean(log.trim()),
+    correlations,
+    provenance: 'User-supplied log; association with this PR and run is not verified.',
+    limitations: [
+      ...analysis.limitations,
+      'Only exact path text is correlated. A missing match does not exclude a relationship. No workflow was rerun.',
+    ],
   };
 }

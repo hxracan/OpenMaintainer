@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added the PR investigation workspace: source-linked JS/TS contract changes, regression scenarios, supplied-log correlations, a release-risk checklist and issue-to-code leads.
+- Added bounded anonymous PR collection with merge-base/head pinning, fork/rename handling, explicit inspection coverage and moving-PR detection.
+- Added a fictional offline example report, JSON export and browser/API/engine regression tests.
+
 - Added a public repository URL checker with six maintenance-file checks, anonymous bounded GitHub reads, actionable findings and explicit analysis limits. Available without sign-in, including in demo mode.
 
 - Added Getting Started guidance inside the dashboard.

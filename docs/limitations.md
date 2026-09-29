@@ -12,6 +12,12 @@ Local health cannot know remote maintainer response/review/dependency freshness.
 
 ## Product
 
+The standalone **PR investigation** is separate from installed-repository background analyses. It currently accepts public PRs only; pasted issue text and CI logs are not automatically retrieved or authenticated. It inspects the first eight eligible JS/TS/config files in GitHub file-list order, up to 125 KB per version, with an explicit uninspected-file list. Maximum changed files: 200; maximum complete tree: 10,000 entries; output: 200 contract findings. Renamed paths and fork head repositories are handled; the PR merge base is compared to the pinned head.
+
+Its contract review is syntactic, not TypeScript assignability checking. It does not resolve wildcard exports, overloads, class members or inferred return types; file exports are not proven package entrypoints. It detects changes for review, including compatible ones. Regression plans are suggestions, not measured missing coverage or runnable tests. Test association is heuristic (matching stems/direct relative imports); monorepo aliases and dynamic imports may be missed. CI matches are path correlations, not verified causes. Issue matches are lexical leads in repository paths and available changed source. Release checks cover the PR only, never approve a release and cannot infer that CI passed. Redaction may mask harmless type annotations and can miss secrets.
+
+No benchmark yet establishes real-world precision, recall or developer time saved. Fixture tests check known cases; a live dependency PR smoke test checks transport, not detection quality. Validate on your own historical changes before relying on findings.
+
 Policies are edited as validated JSON in the dashboard; no visual rule builder. Plugins are local operator code, not a public marketplace or malicious-code sandbox. Only plugin analyzers auto-run; other SDK capabilities need explicit invocation. Notification channels are dashboard, console identifiers and policy-controlled GitHub comments, not email/chat delivery.
 
 AI is optional and paid separately through an API provider. Daily reservations bound request count, not exact financial cost. Browser UI surfaces stored JSON where a richer domain-specific view is not yet implemented.

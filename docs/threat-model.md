@@ -21,6 +21,8 @@ Treat GitHub issue/PR text, filenames, diffs, manifests, logs, webhook metadata 
 
 ## Residual risks
 
+The public PR investigation shares the public scan concurrency gate and adds a three-request/minute peer limit, 24-request/18-second upstream budget, 5 MB per-response/10 MB aggregate bound, complete-tree validation, merge-base/head pinning and a final moving-PR check. It does not forward credentials, follow redirects, execute analyzed code, write repository data or call AI. It accepts optional issue/log text for in-memory correlation; logs and downloads contain best-effort-redacted excerpts. Remove sensitive data before submission. React renders excerpts as text. No untrusted command or test is run automatically.
+
 This is not an audited security product. Pattern-based redaction can miss secrets. AI can hallucinate or be influenced by malicious text. A compromised operator/plugin has host privileges. Application rate limits are not shared across processes. Repository visibility can change between authorization and use. Remote writes cannot be made atomically with the local database.
 
 The initial session flow reauthenticates on expiry and does not implement token refresh. Network response schemas rely partly on GitHub's documented API contract. CI artifacts, backups, reverse proxies and secrets management need separate operator controls.

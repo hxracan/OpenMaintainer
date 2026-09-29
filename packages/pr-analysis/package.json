@@ -8,6 +8,8 @@
     "build": "tsup --config ../../tsup.config.ts src/index.ts"
   },
   "dependencies": {
+    "@openmaintainer/ci-analysis": "workspace:*",
+    "@openmaintainer/issue-triage": "workspace:*",
     "@openmaintainer/core": "workspace:*",
     "@openmaintainer/shared": "workspace:*"
   }

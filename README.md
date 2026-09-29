@@ -20,6 +20,20 @@ pnpm demo
 
 Open [localhost:3000](http://localhost:3000). The isolated demo uses embedded PostgreSQL under `.demo/`, fictional records, and the real API/worker. GitHub writes and OpenAI calls are disabled. The **Repository checker** makes anonymous read-only GitHub requests when you submit a public repository; its results are separate from the fictional demo records. Analyze the demo repository or issue to exercise the queue. Do not expose demo ports publicly.
 
+## Investigate a pull request
+
+Open **PR investigation** in the sidebar. Paste a public `https://github.com/owner/repository/pull/123` URL, optionally add a redacted CI log and an issue/reproduction description, then click **Investigate PR**. **Try example report** exercises all five engines offline with explicitly fictional inputs.
+
+- **Breaking-change review:** compares explicit JS/TS exports, required arguments and fields, parameter defaults, exported literals, package entrypoints and JSON configuration values. Findings include base/head snippets and pinned source links.
+- **Regression-test plan:** relates changed source to test filenames/imports, distinguishes changed from unchanged tests, and proposes arrange/act/assert review scenarios. It does not measure coverage or execute tests.
+- **CI investigation:** groups supplied failure logs and connects exact changed-file paths to diagnostics, without claiming a proven cause or live CI status.
+- **Release-risk checklist:** turns the inspected changes into compatibility, migration, dependency and testing tasks. It covers this PR, not every change since the last release.
+- **Issue-to-code leads:** ranks exact paths, matching path terms and declaration names, with evidence and uncertainty.
+
+Download the combined report as JSON. No AI key, GitHub App, or login is needed for public mode. Reports are not saved. Public inspection uses the PR's merge base and pinned head, supports up to 200 changed files, and fetches complete versions for the first eight eligible files (125 KB each); the report lists uninspected files. Expect up to 24 anonymous GitHub requests per report. This is a review assistant, not a compatibility proof, security audit or merge approval. [Detailed scope](docs/limitations.md).
+
+![Contract review from the explicitly fictional investigation example](docs/assets/investigation.png)
+
 ## Check a public repository
 
 Open **Repository checker** in the sidebar, paste `https://github.com/owner/repository` (or `owner/repository`), then click **Check repository**. No credentials or App installation are required. The report checks for README, license, contribution instructions, security policy, CODEOWNERS and CI workflow files, with explanations of missing items. It also identifies file extensions/languages and archived status.

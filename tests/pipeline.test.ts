@@ -126,6 +126,38 @@ it('allows anonymous public checks without accessing or modifying private worksp
     await app.close();
   }
 });
+it('serves anonymous investigation examples and rejects invalid input without repository access', async () => {
+  const identify = vi.fn().mockRejectedValue(new Error('No session'));
+  const network = vi.fn<typeof fetch>();
+  const app = await createServer({
+    db,
+    webhookSecret: secret,
+    dashboardUrl: 'http://localhost:3000',
+    auth: { identify, access: async () => ({ repositoryIds: [], writableIds: [] }) },
+    publicScanFetch: network,
+  });
+  try {
+    const example = await app.inject({ url: '/api/investigation-example' });
+    expect(example.statusCode).toBe(200);
+    expect(example.json().data.source.example).toBe(true);
+    expect(identify).not.toHaveBeenCalled();
+    const invalid = await app.inject({
+      method: 'POST',
+      url: '/api/public-investigation',
+      payload: { url: 'https://localhost/private' },
+    });
+    expect(invalid.statusCode).toBe(400);
+    const oversized = await app.inject({
+      method: 'POST',
+      url: '/api/public-investigation',
+      payload: { url: 'https://github.com/a/b/pull/1', ciLog: 'x'.repeat(200001) },
+    });
+    expect(oversized.statusCode).toBe(400);
+    expect(network).not.toHaveBeenCalled();
+  } finally {
+    await app.close();
+  }
+});
 it('filters lists and hides inaccessible repository existence', async () => {
   const app = await server();
   try {

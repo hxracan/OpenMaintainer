@@ -1,5 +1,60 @@
 import { expect, test } from '@playwright/test';
 
+test('runs all five investigation engines through the real example API and exports evidence', async ({
+  page,
+}) => {
+  await page.goto('/investigation');
+  await page.getByRole('button', { name: 'Try example report' }).click();
+  for (const name of [
+    '1. Breaking-change review',
+    '2. Regression-test plan',
+    '3. CI failure investigation',
+    '4. Release-risk checklist',
+    '5. Issue-to-code leads',
+  ])
+    await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Example report \(fictional\)/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'required parameter: connect', exact: true })).toBeVisible();
+  await expect(page.getByText('related-tests-unchanged', { exact: true })).toBeVisible();
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download report JSON' }).click();
+  expect((await download).suggestedFilename()).toBe('openmaintainer-investigation.json');
+  await page
+    .getByRole('heading', { name: '1. Breaking-change review', exact: true })
+    .scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'docs/assets/investigation.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+test('submits PR context and clears stale reports when inputs change', async ({ page }) => {
+  const example = (await (await page.request.get('/api/investigation-example')).json()).data;
+  await page.route('**/api/public-investigation', async (route) => {
+    const input = route.request().postDataJSON();
+    if (input.url.endsWith('/99'))
+      return route.fulfill({
+        status: 429,
+        json: { error: { message: 'GitHub anonymous rate limit reached' } },
+      });
+    expect(input.issue).toBe('connect regression');
+    expect(input.ciLog).toBe('src/client.ts: error TS2554');
+    return route.fulfill({
+      json: { data: { ...example, source: { ...example.source, example: false, title: 'Fixture PR' } } },
+    });
+  });
+  await page.goto('/investigation');
+  await page.getByLabel('Public pull request URL').fill('https://github.com/owner/project/pull/12');
+  await page.getByLabel('Issue description or reproduction (optional)').fill('connect regression');
+  await page.getByLabel('CI failure log (optional)').fill('src/client.ts: error TS2554');
+  await page.getByRole('button', { name: 'Investigate PR', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Investigation report: Fixture PR', exact: true }),
+  ).toBeVisible();
+  await page.getByLabel('Public pull request URL').fill('https://github.com/owner/project/pull/99');
+  await expect(page.getByRole('region', { name: 'PR investigation report' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Investigate PR', exact: true }).click();
+  await expect(page.locator('article').getByRole('alert')).toContainText('rate limit');
+});
+
 test('checks a pasted repository and displays findings and actionable errors', async ({ page }) => {
   // Browser fixture only; API tests exercise the scanner with mocked GitHub responses.
   await page.route('**/api/public-scan', async (route) => {

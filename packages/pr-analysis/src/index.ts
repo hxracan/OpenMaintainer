@@ -3,6 +3,7 @@ import { safePath } from '@openmaintainer/shared';
 import { breakingChanges } from './breaking.js';
 
 export { breakingChanges } from './breaking.js';
+export { investigateChanges } from './investigation.js';
 export function analyzePullRequest(
   files: ChangedFile[],
   options: { body?: string; firstTimeContributor?: boolean; workspaceRoots?: string[] } = {},

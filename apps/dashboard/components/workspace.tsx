@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { api, type Item, list, record, string } from './client';
+import { Investigation } from './investigation';
 import { JobButton } from './job-button';
 import { DuplicateInspector, GettingStarted, JobList, RulePreview } from './maintainer-tools';
 import { RepositoryChecker } from './repository-checker';
@@ -10,6 +11,7 @@ import { RepositoryChecker } from './repository-checker';
 const sections = [
   ['getting-started', 'Getting started', '→'],
   ['repository-checker', 'Repository checker', '⌕'],
+  ['investigation', 'PR investigation', '⌘'],
   ['dashboard', 'Overview', '◈'],
   ['repositories', 'Repositories', '▣'],
   ['pull-requests', 'Pull requests', '⑂'],
@@ -25,6 +27,7 @@ const sections = [
   ['settings', 'Settings', '⚙'],
 ] as const;
 const descriptions: Record<string, string> = {
+  investigation: 'Evidence, regression scenarios and release risks from a real change set.',
   'repository-checker': 'Paste a public repository URL to find maintenance gaps.',
   'getting-started': 'Your first useful result, and how to connect your own repositories.',
   dashboard: 'A clear view of the work that needs your attention.',
@@ -66,7 +69,7 @@ export function Workspace({ segments }: { segments: string[] }) {
     let active = true;
     setLoading(true);
     setError('');
-    if (section === 'getting-started' || section === 'repository-checker') {
+    if (['getting-started', 'repository-checker', 'investigation'].includes(section)) {
       setLoading(false);
       void api('session')
         .then((s) => {
@@ -169,7 +172,9 @@ export function Workspace({ segments }: { segments: string[] }) {
             </div>
           ) : (
             <>
-              {section === 'repository-checker' ? (
+              {section === 'investigation' ? (
+                <Investigation />
+              ) : section === 'repository-checker' ? (
                 <RepositoryChecker />
               ) : section === 'getting-started' ? (
                 <GettingStarted demo={demo} />
@@ -298,6 +303,7 @@ export function Workspace({ segments }: { segments: string[] }) {
                   'settings',
                   'getting-started',
                   'repository-checker',
+                  'investigation',
                   'analytics',
                   'plugins',
                   'automations',

@@ -64,3 +64,17 @@ export function boundedText(value: string, maximum = 100_000): string {
   return value;
 }
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Match a whole repository path, allowing an absolute runner prefix but not a filename suffix. */
+export function hasPathMention(text: string, path: string): boolean {
+  if (!path) return false;
+  const normalized = text.replaceAll('\\', '/');
+  let offset = normalized.indexOf(path);
+  while (offset >= 0) {
+    const before = normalized[offset - 1] ?? '',
+      after = normalized[offset + path.length] ?? '';
+    if (!/[A-Za-z0-9_.-]/.test(before) && !/[A-Za-z0-9_./-]/.test(after)) return true;
+    offset = normalized.indexOf(path, offset + 1);
+  }
+  return false;
+}
