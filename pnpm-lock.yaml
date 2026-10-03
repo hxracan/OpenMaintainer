@@ -58,8 +58,8 @@ importers:
         specifier: ^1.58.0
         version: 1.63.0
       '@types/node':
-        specifier: ^24.0.0
-        version: 24.13.6
+        specifier: ^26.6.3
+        version: 26.6.3
       '@types/pg':
         specifier: ^8.15.0
         version: 8.23.1
@@ -86,7 +86,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 5.0.2
-        version: 5.0.2(@types/node@24.13.6)(vite@8.3.1(@types/node@24.13.6)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))
+        version: 5.0.2(@types/node@26.6.3)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))
 
   apps/api:
     dependencies:
@@ -128,7 +128,7 @@ importers:
     dependencies:
       next:
         specifier: 16.3.6
-        version: 16.3.6(@playwright/test@1.63.0)(@types/node@24.13.6)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 16.3.6(@playwright/test@1.63.0)(@types/node@26.6.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react:
         specifier: ^19.2.0
         version: 19.3.0
@@ -1138,8 +1138,8 @@ packages:
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
-  '@types/node@24.13.6':
-    resolution: {integrity: sha512-SGrw/h3KPFshy3OE6ZL53LMBG5vGQQ8/gIpiqz/kRZhPJ7HgwCEs8LBuNtWLa8dvGZVpSF7+Bf+c11HUrCb/yg==}
+  '@types/node@26.6.3':
+    resolution: {integrity: sha512-dsqMQQoeTLqu9wynDD00q573mNzso3IdQOAfHRJqLCcmCFPoGo9A1bDpUcv/9tnKpErQWv9uKeGfl37EIS02Yg==}
 
   '@types/pg@8.23.1':
     resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
@@ -1817,8 +1817,8 @@ packages:
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
 
-  undici-types@7.18.2:
-    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
+  undici-types@8.9.0:
+    resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
   vite@8.3.1:
     resolution: {integrity: sha512-/bvH9E9tmCXRGp2uXY3WbOldqpTwFkbha/8ANaEQ6VkxhH60KyqLwgZq6lG2y+4uT55x9+9eUHMpQ7uGnOCKjA==}
@@ -2390,13 +2390,13 @@ snapshots:
 
   '@types/estree@1.0.9': {}
 
-  '@types/node@24.13.6':
+  '@types/node@26.6.3':
     dependencies:
-      undici-types: 7.18.2
+      undici-types: 8.9.0
 
   '@types/pg@8.23.1':
     dependencies:
-      '@types/node': 24.13.6
+      '@types/node': 26.6.3
       pg-protocol: 1.16.0
       pg-types: 2.2.0
 
@@ -2412,14 +2412,14 @@ snapshots:
 
   '@types/semver@7.8.0': {}
 
-  '@vitest/mocker@5.0.2(vite@8.3.1(@types/node@24.13.6)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))':
+  '@vitest/mocker@5.0.2(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.2
       estree-walker: 3.0.3
       magic-string: 1.4.2
     optionalDependencies:
-      vite: 8.3.1(@types/node@24.13.6)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1)
+      vite: 8.3.1(@types/node@26.6.3)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1)
 
   '@vitest/spy@5.0.2': {}
 
@@ -2691,7 +2691,7 @@ snapshots:
 
   nanoid@3.3.19: {}
 
-  next@16.3.6(@playwright/test@1.63.0)(@types/node@24.13.6)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
+  next@16.3.6(@playwright/test@1.63.0)(@types/node@26.6.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:
       '@next/env': 16.3.6
       '@swc/helpers': 0.5.23
@@ -2711,7 +2711,7 @@ snapshots:
       '@next/swc-win32-arm64-msvc': 16.3.6
       '@next/swc-win32-x64-msvc': 16.3.6
       '@playwright/test': 1.63.0
-      sharp: 0.35.4(@types/node@24.13.6)
+      sharp: 0.35.4(@types/node@26.6.3)
     transitivePeerDependencies:
       - '@babel/core'
       - '@types/node'
@@ -2924,7 +2924,7 @@ snapshots:
 
   set-cookie-parser@2.7.2: {}
 
-  sharp@0.35.4(@types/node@24.13.6):
+  sharp@0.35.4(@types/node@26.6.3):
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
@@ -2955,7 +2955,7 @@ snapshots:
       '@img/sharp-win32-arm64': 0.35.4
       '@img/sharp-win32-ia32': 0.35.4
       '@img/sharp-win32-x64': 0.35.4
-      '@types/node': 24.13.6
+      '@types/node': 26.6.3
     optional: true
 
   sonic-boom@4.2.1:
@@ -3063,9 +3063,9 @@ snapshots:
 
   ufo@1.6.4: {}
 
-  undici-types@7.18.2: {}
+  undici-types@8.9.0: {}
 
-  vite@8.3.1(@types/node@24.13.6)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1):
+  vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
@@ -3073,16 +3073,16 @@ snapshots:
       rolldown: 1.2.11
       tinyglobby: 0.2.17
     optionalDependencies:
-      '@types/node': 24.13.6
+      '@types/node': 26.6.3
       esbuild: 0.28.1
       fsevents: 2.3.3
       tsx: 4.23.15
       yaml: 2.9.1
 
-  vitest@5.0.2(@types/node@24.13.6)(vite@8.3.1(@types/node@24.13.6)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1)):
+  vitest@5.0.2(@types/node@26.6.3)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.2(vite@8.3.1(@types/node@24.13.6)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))
+      '@vitest/mocker': 5.0.2(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -3093,10 +3093,10 @@ snapshots:
       tinybench: 6.2.0
       tinyexec: 1.3.1
       tinyglobby: 0.2.17
-      vite: 8.3.1(@types/node@24.13.6)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1)
+      vite: 8.3.1(@types/node@26.6.3)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1)
       why-is-node-running: 3.2.2
     optionalDependencies:
-      '@types/node': 24.13.6
+      '@types/node': 26.6.3
     transitivePeerDependencies:
       - msw
 
